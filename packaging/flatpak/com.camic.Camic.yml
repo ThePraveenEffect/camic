@@ -104,8 +104,10 @@ modules:
       # Wrapper: Electron's own chromium sandbox can't be SUID inside a
       # Flatpak, and bwrap already sandboxes us, so disable it here.
       # The raw electron dist names the binary "electron".
+      # ozone-platform-hint=auto: pick Wayland inside the sandbox when the
+      # session is Wayland, fall back to X11 otherwise.
       - |
-        printf '#!/bin/sh\nexec /app/camic/electron --no-sandbox "$@"\n' \
+        printf '#!/bin/sh\nexec /app/camic/electron --no-sandbox --ozone-platform-hint=auto "$@"\n' \
           > /app/bin/camic-desktop
       - chmod +x /app/bin/camic-desktop
       - install -Dm644 packaging/flatpak/com.camic.Camic.desktop
