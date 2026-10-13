@@ -32,7 +32,6 @@ finish-args:
   - --socket=wayland
   - --socket=pulseaudio
   - --device=all
-  - --filesystem=/dev
 
 modules:
   # Electron runtime, unpacked to /app/camic. Not SUID-able inside a Flatpak
@@ -104,8 +103,9 @@ modules:
         done
       # Wrapper: Electron's own chromium sandbox can't be SUID inside a
       # Flatpak, and bwrap already sandboxes us, so disable it here.
+      # The raw electron dist names the binary "electron".
       - |
-        printf '#!/bin/sh\nexec /app/camic/camic-desktop --no-sandbox "$@"\n' \
+        printf '#!/bin/sh\nexec /app/camic/electron --no-sandbox "$@"\n' \
           > /app/bin/camic-desktop
       - chmod +x /app/bin/camic-desktop
       - install -Dm644 packaging/flatpak/com.camic.Camic.desktop
