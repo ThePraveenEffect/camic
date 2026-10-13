@@ -20,9 +20,11 @@ Phone (Android)  ──H.264 + AAC over Wi-Fi──►  PC (Linux)
 
 ## Install — pick your distro
 
-All downloads come from the
-**[v1.0.0 release](https://github.com/ThePraveenEffect/camic/releases/tag/v1.0.0)**.
-SHA256 checksums: [`SHA256SUMS`](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/SHA256SUMS).
+All downloads come from GitHub Releases.
+Linux packages (`.deb`/`.rpm`/AppImage/tar.gz): **[v1.0.0](https://github.com/ThePraveenEffect/camic/releases/tag/v1.0.0)**.
+Android APK: **[v1.0.1](https://github.com/ThePraveenEffect/camic/releases/tag/v1.0.1)** (latest).
+SHA256 checksums: [v1.0.0](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/SHA256SUMS) ·
+[v1.0.1](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.1/SHA256SUMS).
 
 ### Fedora / RHEL / CentOS (`.rpm`)
 
@@ -68,7 +70,7 @@ tar -xzf Camic-1.0.0-x64.tar.gz
 ### Android (`.apk`)
 
 1. On your phone, open:
-   **https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/camic-1.0.0-android.apk**
+   **https://github.com/ThePraveenEffect/camic/releases/download/v1.0.1/camic-1.0.1-android.apk**
 2. Allow **Install from this source** / **Install unknown apps** when prompted.
 3. Open **Camic**, grant **Camera** and **Microphone**.
 4. Note the **pairing PIN** shown on screen.
@@ -123,9 +125,17 @@ echo 'options v4l2loopback card_label="Camic Camera" exclusive_caps=1' | \
 
 ## Verify a download
 
+Grab the `SHA256SUMS` that matches the release you downloaded (Linux = v1.0.0,
+Android = v1.0.1), then:
+
 ```bash
 cd ~/Downloads/camic
+# Linux packages (v1.0.0):
 curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+
+# Android APK (v1.0.1):
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.1/SHA256SUMS
 sha256sum -c SHA256SUMS --ignore-missing
 ```
 
@@ -214,7 +224,7 @@ camic/
 |---|---|
 | Protocol + fake-phone test harness | ✅ done, integration test passes |
 | Linux desktop receiver (Electron) | ✅ v1.0.0 released — `.deb`/`.rpm`/AppImage/tar.gz |
-| Android app (Flutter + MediaCodec) | ✅ APK in the v1.0.0 release |
+| Android app (Flutter + MediaCodec) | ✅ APK v1.0.1 released — real launcher icon + fix for stale "connected" after the PC drops |
 | Flatpak / Snap | 🟡 manifests written, not yet published |
 | Windows DirectShow filters | 🟡 scaffolded — **must be built/tested on Windows (MSVC)** |
 | iOS (VideoToolbox/AudioToolbox) | 🟡 scaffolded — **must be built/tested on a Mac** |
