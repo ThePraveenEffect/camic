@@ -6,10 +6,10 @@
   "main": "src/main/index.js",
   "author": "Camic",
   "license": "MIT",
-  "homepage": "https://github.com/camic/camic",
+  "homepage": "https://github.com/ThePraveenEffect/camic",
   "repository": {
     "type": "git",
-    "url": "https://github.com/camic/camic.git"
+    "url": "https://github.com/ThePraveenEffect/camic.git"
   },
   "scripts": {
     "start": "electron .",

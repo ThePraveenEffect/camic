@@ -19,9 +19,9 @@ description: |
 license: MIT
 grade: stable
 confinement: strict
-website: https://github.com/camic/camic
-source-code: https://github.com/camic/camic
-issues: https://github.com/camic/camic/issues
+website: https://github.com/ThePraveenEffect/camic
+source-code: https://github.com/ThePraveenEffect/camic
+issues: https://github.com/ThePraveenEffect/camic/issues
 
 apps:
   camic:

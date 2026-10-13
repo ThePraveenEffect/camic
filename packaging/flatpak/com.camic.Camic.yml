@@ -55,7 +55,7 @@ modules:
     buildsystem: simple
     sources:
       - type: git
-        url: https://github.com/camic/camic.git
+        url: https://github.com/ThePraveenEffect/camic.git
         branch: main
       - type: file
         url: https://registry.npmjs.org/bonjour-service/-/bonjour-service-1.4.4.tgz

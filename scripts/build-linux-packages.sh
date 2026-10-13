@@ -17,7 +17,7 @@ VERSION="$(node -p "require('$APP_DIR/package.json').version")"
 ARCH_DEB="amd64"
 ARCH_RPM="x86_64"
 MAINTAINER="Camic <maintainers@camic.app>"
-HOMEPAGE="https://github.com/camic/camic"
+HOMEPAGE="https://github.com/ThePraveenEffect/camic"
 SUMMARY="Wireless webcam + mic from your phone over Wi-Fi"
 
 WHAT="${1:-all}"

@@ -28,22 +28,22 @@
     <binary>camic-desktop</binary>
   </provides>
 
-  <url type="homepage">https://github.com/camic/camic</url>
-  <url type="bugtracker">https://github.com/camic/camic/issues</url>
-  <url type="vcs-browser">https://github.com/camic/camic</url>
+  <url type="homepage">https://github.com/ThePraveenEffect/camic</url>
+  <url type="bugtracker">https://github.com/ThePraveenEffect/camic/issues</url>
+  <url type="vcs-browser">https://github.com/ThePraveenEffect/camic</url>
 
   <screenshots>
     <screenshot type="default">
       <caption>Camic streaming a phone camera with live FPS and bitrate stats</caption>
-      <image>https://raw.githubusercontent.com/camic/camic/main/docs/images/camic-desktop-live.png</image>
+      <image>https://raw.githubusercontent.com/ThePraveenEffect/camic/main/docs/images/camic-desktop-live.png</image>
     </screenshot>
     <screenshot>
       <caption>Camic idle, waiting for a phone on the local network</caption>
-      <image>https://raw.githubusercontent.com/camic/camic/main/docs/images/camic-desktop-idle.png</image>
+      <image>https://raw.githubusercontent.com/ThePraveenEffect/camic/main/docs/images/camic-desktop-idle.png</image>
     </screenshot>
     <screenshot>
       <caption>The Camic Android app during PIN pairing</caption>
-      <image>https://raw.githubusercontent.com/camic/camic/main/docs/images/camic-android.png</image>
+      <image>https://raw.githubusercontent.com/ThePraveenEffect/camic/main/docs/images/camic-android.png</image>
     </screenshot>
   </screenshots>
 
