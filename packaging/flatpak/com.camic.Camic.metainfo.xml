@@ -32,16 +32,20 @@
   <url type="bugtracker">https://github.com/camic/camic/issues</url>
   <url type="vcs-browser">https://github.com/camic/camic</url>
 
-  <!-- TODO(maintainer): replace with real hosted screenshots before Flathub
-       submission (Flathub requires at least one screenshot). -->
-  <!--
   <screenshots>
     <screenshot type="default">
-      <caption>Camic running with a phone stream in OBS</caption>
-      <image>https://raw.githubusercontent.com/camic/camic/main/screenshots/main.png</image>
+      <caption>Camic streaming a phone camera with live FPS and bitrate stats</caption>
+      <image>https://raw.githubusercontent.com/camic/camic/main/docs/images/camic-desktop-live.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Camic idle, waiting for a phone on the local network</caption>
+      <image>https://raw.githubusercontent.com/camic/camic/main/docs/images/camic-desktop-idle.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>The Camic Android app during PIN pairing</caption>
+      <image>https://raw.githubusercontent.com/camic/camic/main/docs/images/camic-android.png</image>
     </screenshot>
   </screenshots>
-  -->
 
   <developer id="com.camic">
     <name>Camic</name>
