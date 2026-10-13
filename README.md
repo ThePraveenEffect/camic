@@ -33,7 +33,7 @@ sudo dnf install https://github.com/ThePraveenEffect/camic/releases/download/v1.
 ### Ubuntu / Debian (`.deb`)
 
 ```bash
-cd /tmp
+mkdir -p ~/Downloads/camic && cd ~/Downloads/camic
 curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/camic-1.0.0-amd64.deb
 sudo apt install ./camic-1.0.0-amd64.deb
 ```
@@ -43,7 +43,7 @@ sudo apt install ./camic-1.0.0-amd64.deb
 ### Any other Linux — AppImage (no install, portable)
 
 ```bash
-cd ~/Downloads
+mkdir -p ~/Downloads/camic && cd ~/Downloads/camic
 curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/Camic-1.0.0-x86_64.AppImage
 chmod +x Camic-1.0.0-x86_64.AppImage
 ./Camic-1.0.0-x86_64.AppImage
@@ -59,7 +59,7 @@ APPIMAGE_EXTRACT_AND_RUN=1 ./Camic-1.0.0-x86_64.AppImage
 ### Portable tarball (no root, no package manager)
 
 ```bash
-cd ~
+mkdir -p ~/Downloads/camic && cd ~/Downloads/camic
 curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/Camic-1.0.0-x64.tar.gz
 tar -xzf Camic-1.0.0-x64.tar.gz
 ./Camic-1.0.0-x64/camic-desktop
@@ -124,6 +124,7 @@ echo 'options v4l2loopback card_label="Camic Camera" exclusive_caps=1' | \
 ## Verify a download
 
 ```bash
+cd ~/Downloads/camic
 curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/SHA256SUMS
 sha256sum -c SHA256SUMS --ignore-missing
 ```
