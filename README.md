@@ -21,23 +21,23 @@ Phone (Android)  ──H.264 + AAC over Wi-Fi──►  PC (Linux)
 ## Install — pick your distro
 
 All downloads come from GitHub Releases.
-Linux packages (`.deb`/`.rpm`/AppImage/tar.gz): **[v1.0.0](https://github.com/ThePraveenEffect/camic/releases/tag/v1.0.0)**.
+Linux packages (`.deb`/`.rpm`/AppImage/tar.gz): **[v1.0.2](https://github.com/ThePraveenEffect/camic/releases/tag/v1.0.2)**.
 Android APK: **[v1.0.1](https://github.com/ThePraveenEffect/camic/releases/tag/v1.0.1)** (latest).
-SHA256 checksums: [v1.0.0](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/SHA256SUMS) ·
-[v1.0.1](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.1/SHA256SUMS).
+SHA256 checksums: [v1.0.2](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/SHA256SUMS) ·
+[v1.0.1](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.1/SHA256SUMS-1.0.1.txt).
 
 ### Fedora / RHEL / CentOS (`.rpm`)
 
 ```bash
-sudo dnf install https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/camic-1.0.0.x86_64.rpm
+sudo dnf install https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/camic-1.0.2.x86_64.rpm
 ```
 
 ### Ubuntu / Debian (`.deb`)
 
 ```bash
 mkdir -p ~/Downloads/camic && cd ~/Downloads/camic
-curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/camic-1.0.0-amd64.deb
-sudo apt install ./camic-1.0.0-amd64.deb
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/camic-1.0.2-amd64.deb
+sudo apt install ./camic-1.0.2-amd64.deb
 ```
 
 > `apt install ./file.deb` resolves dependencies from Ubuntu's own repos.
@@ -46,25 +46,25 @@ sudo apt install ./camic-1.0.0-amd64.deb
 
 ```bash
 mkdir -p ~/Downloads/camic && cd ~/Downloads/camic
-curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/Camic-1.0.0-x86_64.AppImage
-chmod +x Camic-1.0.0-x86_64.AppImage
-./Camic-1.0.0-x86_64.AppImage
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/Camic-1.0.2-x86_64.AppImage
+chmod +x Camic-1.0.2-x86_64.AppImage
+./Camic-1.0.2-x86_64.AppImage
 ```
 
 If your distro doesn't ship FUSE 2 (Arch, some minimal installs), either
 `sudo pacman -S fuse2` / `sudo apt install libfuse2t64`, or run without FUSE:
 
 ```bash
-APPIMAGE_EXTRACT_AND_RUN=1 ./Camic-1.0.0-x86_64.AppImage
+APPIMAGE_EXTRACT_AND_RUN=1 ./Camic-1.0.2-x86_64.AppImage
 ```
 
 ### Portable tarball (no root, no package manager)
 
 ```bash
 mkdir -p ~/Downloads/camic && cd ~/Downloads/camic
-curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/Camic-1.0.0-x64.tar.gz
-tar -xzf Camic-1.0.0-x64.tar.gz
-./Camic-1.0.0-x64/camic-desktop
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/Camic-1.0.2-x64.tar.gz
+tar -xzf Camic-1.0.2-x64.tar.gz
+./Camic-1.0.2-x64/camic-desktop
 ```
 
 ### Android (`.apk`)
@@ -125,18 +125,18 @@ echo 'options v4l2loopback card_label="Camic Camera" exclusive_caps=1' | \
 
 ## Verify a download
 
-Grab the `SHA256SUMS` that matches the release you downloaded (Linux = v1.0.0,
+Grab the `SHA256SUMS` that matches the release you downloaded (Linux = v1.0.2,
 Android = v1.0.1), then:
 
 ```bash
 cd ~/Downloads/camic
-# Linux packages (v1.0.0):
-curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/SHA256SUMS
+# Linux packages (v1.0.2):
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/SHA256SUMS
 sha256sum -c SHA256SUMS --ignore-missing
 
 # Android APK (v1.0.1):
-curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.1/SHA256SUMS
-sha256sum -c SHA256SUMS --ignore-missing
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.1/SHA256SUMS-1.0.1.txt
+sha256sum -c SHA256SUMS-1.0.1.txt --ignore-missing
 ```
 
 ---
@@ -223,7 +223,7 @@ camic/
 | Part | State |
 |---|---|
 | Protocol + fake-phone test harness | ✅ done, integration test passes |
-| Linux desktop receiver (Electron) | ✅ v1.0.0 released — `.deb`/`.rpm`/AppImage/tar.gz |
+| Linux desktop receiver (Electron) | ✅ v1.0.2 released — `.deb`/`.rpm`/AppImage/tar.gz |
 | Android app (Flutter + MediaCodec) | ✅ APK v1.0.1 released — real launcher icon + fix for stale "connected" after the PC drops |
 | Flatpak / Snap | 🟡 manifests written, not yet published |
 | Windows DirectShow filters | 🟡 scaffolded — **must be built/tested on Windows (MSVC)** |

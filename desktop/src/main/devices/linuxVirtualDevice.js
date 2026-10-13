@@ -36,6 +36,7 @@ class LinuxVirtualDevice extends EventEmitter {
     this.vsize = { w: 1280, h: 720, fps: 30 };
     this.audProc = null;
     this.sinkModuleId = null;
+    this.sourceModuleId = null;
     this.ffmpeg = opts.ffmpeg || this.findFfmpeg();
   }
 
@@ -282,14 +283,46 @@ class LinuxVirtualDevice extends EventEmitter {
     // create null sink named camic_mic if it doesn't exist
     try {
       const out = require('child_process').execSync('pactl list short sinks 2>/dev/null || true', { encoding: 'utf8' });
-      if (out.includes(this.sinkName)) return;
-      const mod = require('child_process').execSync(
-        `pactl load-module module-null-sink sink_name=${this.sinkName} sink_properties=device.description=CamicMic 2>/dev/null || true`,
-        { encoding: 'utf8' }
-      ).trim();
-      if (mod) this.sinkModuleId = parseInt(mod, 10);
+      if (!out.includes(this.sinkName)) {
+        const mod = require('child_process').execSync(
+          `pactl load-module module-null-sink sink_name=${this.sinkName} sink_properties=device.description=CamicMic 2>/dev/null || true`,
+          { encoding: 'utf8' }
+        ).trim();
+        if (mod) this.sinkModuleId = parseInt(mod, 10);
+      }
+      this.ensureSource();
     } catch (err) {
       this.emit('error', new Error('Could not create audio sink (is pulseaudio-utils/pactl installed?): ' + err.message));
+    }
+  }
+
+  /**
+   * Browsers (Chromium/Firefox) filter out PulseAudio *monitor* sources from
+   * their microphone pickers — they only list real Audio/Source nodes. So the
+   * null-sink's ".monitor" is visible to OBS but NOT to a browser's
+   * getUserMedia list. The fix: a module-remap-source wrapping the monitor,
+   * which presents as a regular source ("Monitor of Sink: n/a") and passes
+   * audio through untouched.
+   *
+   * NOTE: pactl splits module args on spaces, so the device.description value
+   * uses U+00A0 (NBSP) between words — it renders as a normal space in UIs
+   * but survives the arg split.
+   */
+  ensureSource() {
+    try {
+      const out = require('child_process').execSync('pactl list short sources 2>/dev/null || true', { encoding: 'utf8' });
+      if (out.includes('camic_mic_source')) return;
+      const nbsp = ' ';
+      const mod = require('child_process').execSync(
+        `pactl load-module module-remap-source master=${this.sinkName}.monitor ` +
+        `source_name=camic_mic_source ` +
+        `source_properties="device.description=Camic${nbsp}Microphone device.icon_name=audio-input-microphone" ` +
+        `2>/dev/null || true`,
+        { encoding: 'utf8' }
+      ).trim();
+      if (mod) this.sourceModuleId = parseInt(mod, 10);
+    } catch (err) {
+      this.emit('error', new Error('Could not create microphone source: ' + err.message));
     }
   }
 

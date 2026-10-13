@@ -60,6 +60,13 @@
   </categories>
 
   <releases>
+    <release version="1.0.2" date="2026-10-13">
+      <description>
+        <p>Linux: expose the virtual microphone as a real Audio/Source so it
+        appears in browser microphone pickers (Chromium and Firefox used to
+        hide the monitor source).</p>
+      </description>
+    </release>
     <release version="1.0.0" date="2026-10-12">
       <description>
         <p>Initial release: wireless webcam and microphone from your phone.</p>
