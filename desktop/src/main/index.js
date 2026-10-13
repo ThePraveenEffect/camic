@@ -1,5 +1,9 @@
 'use strict';
 const { app, BrowserWindow, ipcMain } = require('electron');
+// White/black window on Fedora Wayland: Electron 33 defaults to X11 (XWayland)
+// which fails to composite on some sessions. Native Wayland via ozone fixes it;
+// on pure X11 sessions this flag is a no-op.
+app.commandLine.appendSwitch('ozone-platform-hint', 'auto');
 const path = require('path');
 const os = require('os');
 const { Discovery } = require('./discovery');
