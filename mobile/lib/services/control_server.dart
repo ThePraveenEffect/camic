@@ -19,10 +19,17 @@ class ControlServer {
   void Function()? onSwitchCamera;
   void Function(bool on)? onTorch;
 
+  /// Invoked when the authenticated desktop link goes away (clean close,
+  /// error, or timeout). The app uses this to immediately drop the
+  /// "connected"/"streaming" state instead of showing a stale connection.
+  void Function()? onDisconnect;
+
   ServerSocket? _server;
   Socket? _client;
   InternetAddress? peerAddress;
   Timer? _authTimer;
+  Timer? _keepAlive;
+  bool _linkUp = false; // an authenticated desktop is currently connected
   int _attempts = 0;
   DateTime _attemptWindow = DateTime.now();
 
@@ -35,6 +42,8 @@ class ControlServer {
 
   void _onConnection(Socket socket) {
     // single desktop at a time
+    if (identical(_client, socket)) return;
+    final hadLink = _linkUp;
     _client?.destroy();
     _client = socket;
     peerAddress = socket.remoteAddress;
@@ -53,16 +62,42 @@ class ControlServer {
         final line = text.substring(0, idx).trim();
         text = text.substring(idx + 1);
         if (line.isNotEmpty) {
+          final wasAuthed = authed;
           authed = _handleLine(line, socket, authed, peer) || authed;
+          if (authed && !wasAuthed) _markLinkUp(socket);
         }
         idx = text.indexOf('\n');
       }
       sb.clear();
       sb.write(text);
-    }, onError: (_) { socket.destroy(); }, onDone: () {
-      if (identical(_client, socket)) { _client = null; peerAddress = null; }
-      _authTimer?.cancel();
+    }, onError: (_) { _teardown(socket, hadLink); }, onDone: () {
+      _teardown(socket, hadLink);
     });
+  }
+
+  /// Link is authenticated: start a keepalive so a silently-vanished desktop
+  /// (crash / wifi drop / no clean TCP close) is detected within ~5s.
+  void _markLinkUp(Socket socket) {
+    _linkUp = true;
+    _keepAlive?.cancel();
+    _keepAlive = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (!identical(_client, socket)) return;
+      _send(socket, {'cmd': 'ping', 't': DateTime.now().millisecondsSinceEpoch});
+    });
+  }
+
+  void _teardown(Socket socket, bool wasLinkUp) {
+    _authTimer?.cancel();
+    if (identical(_client, socket)) {
+      _client = null;
+      peerAddress = null;
+      _keepAlive?.cancel();
+      _keepAlive = null;
+      if (_linkUp || wasLinkUp) {
+        _linkUp = false;
+        onDisconnect?.call();
+      }
+    }
   }
 
   bool _handleLine(String line, Socket socket, bool authed, String peer) {
@@ -104,6 +139,7 @@ class ControlServer {
       case 'switchCamera': onSwitchCamera?.call(); break;
       case 'setTorch': onTorch?.call(msg['on'] == true); break;
       case 'ping': _send(socket, {'cmd': 'pong', 't': msg['t'], 'lt': DateTime.now().millisecondsSinceEpoch}); break;
+      case 'pong': break; // reply to our own keepalive — nothing to do
       default: break;
     }
     return authed;
@@ -123,10 +159,16 @@ class ControlServer {
 
   Future<void> stop() async {
     _authTimer?.cancel();
+    _keepAlive?.cancel();
+    _keepAlive = null;
+    final wasUp = _linkUp;
+    _linkUp = false;
     _client?.destroy();
     _client = null;
+    peerAddress = null;
     await _server?.close();
     _server = null;
+    if (wasUp) onDisconnect?.call();
   }
 }
 

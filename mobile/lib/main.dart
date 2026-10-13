@@ -72,6 +72,7 @@ class _ServerScreenState extends State<ServerScreen> with WidgetsBindingObserver
     _control!.onStop = _onStop;
     _control!.onSwitchCamera = () => _stream.switchCamera();
     _control!.onTorch = (_) {}; // torch wired in VideoEncoder if desired
+    _control!.onDisconnect = _onDisconnect;
     try {
       await _control!.start(port: 4747);
       await _nsd.advertise(name: await _deviceName(), port: 4747, id: _deviceId);
@@ -124,6 +125,20 @@ class _ServerScreenState extends State<ServerScreen> with WidgetsBindingObserver
     await _stream.stop();
     setState(() => _streaming = false);
     _control?.sendStatus({'cmd': 'stopped'});
+  }
+
+  /// The desktop link dropped (clean close, error, or keepalive timeout).
+  /// Stop streaming and return to the ready state immediately — don't leave
+  /// the UI showing a stale "connected".
+  void _onDisconnect() {
+    _stream.stop();
+    if (!mounted) return;
+    setState(() {
+      _streaming = false;
+      _status = 'Ready to connect';
+      _detail = 'Desktop disconnected. Waiting for a Camic desktop on this Wi-Fi…';
+    });
+    _addLog('desktop disconnected');
   }
 
   void _addLog(String msg) {
