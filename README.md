@@ -7,78 +7,79 @@ Turn your phone's **camera + microphone** into a wireless webcam and mic for you
 | ![Camic desktop — live](docs/images/camic-desktop-live.png) | ![Camic Android](docs/images/camic-android.png) |
 
 ```
-Phone (Android)  ──H.264 + AAC over Wi-Fi──►  PC (Linux / Windows)
- Camera2               UDP :4748 + TCP :4747      v4l2loopback / DirectShow
+Phone (Android)  ──H.264 + AAC over Wi-Fi──►  PC (Linux)
+ Camera2               UDP :4748 + TCP :4747      v4l2loopback + PipeWire
  MediaCodec            mDNS auto-discovery         "Camic Camera" + "camic_mic"
 ```
 
 - **~60–120 ms** glass-to-glass latency on a clean LAN (hardware encode on the phone).
 - **Auto-discovery** via mDNS, plus a **6-digit pairing PIN** so neighbours can't connect.
-- Real virtual devices: **v4l2loopback + PipeWire** on Linux, **DirectShow** on Windows.
+- Real virtual devices: **v4l2loopback + PipeWire** on Linux.
 
 ---
 
-## Install
+## Install — pick your distro
 
-Prebuilt packages live in [`dist/`](dist/). Checksums are in [`dist/SHA256SUMS`](dist/SHA256SUMS).
+All downloads come from the
+**[v1.0.0 release](https://github.com/ThePraveenEffect/camic/releases/tag/v1.0.0)**.
+SHA256 checksums: [`SHA256SUMS`](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/SHA256SUMS).
 
-### Ubuntu / Debian — `.deb`
+### Fedora / RHEL / CentOS (`.rpm`)
 
 ```bash
-# one-time: fetch our APT repository key (see docs/PUBLISHING.md for how this repo is hosted)
-curl -fsSL https://YOUR-APT-HOST/camic/KEY.gpg | sudo gpg --dearmor -o /usr/share/keyrings/camic.gpg
-echo "deb [signed-by=/usr/share/keyrings/camic.gpg] https://YOUR-APT-HOST/camic ./" | \
-  sudo tee /etc/apt/sources.list.d/camic.list
-sudo apt update && sudo apt install camic
+sudo dnf install https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/camic-1.0.0.x86_64.rpm
 ```
 
-Or install the file directly:
+### Ubuntu / Debian (`.deb`)
 
 ```bash
+cd /tmp
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/camic-1.0.0-amd64.deb
 sudo apt install ./camic-1.0.0-amd64.deb
 ```
 
-### Fedora — `.rpm`
+> `apt install ./file.deb` resolves dependencies from Ubuntu's own repos.
+
+### Any other Linux — AppImage (no install, portable)
 
 ```bash
-# one-time: enable our repo (see docs/PUBLISHING.md)
-sudo dnf config-manager --add-repo https://YOUR-DNF-HOST/camic/camic.repo
-sudo dnf install camic
-```
-
-Or install the file directly:
-
-```bash
-sudo dnf install ./camic-1.0.0.x86_64.rpm
-```
-
-### Android — `.apk`
-
-1. Copy `camic-1.0.0-android.apk` to your phone (USB, or from this machine over HTTP).
-2. Open it and allow **Install from this source** when prompted.
-3. Open **Camic**, grant **Camera** and **Microphone**.
-4. Note the **pairing PIN** shown on screen.
-
-> Android 8.0+ (minSdk 24). The app keeps the camera alive as a foreground service, so it
-> keeps streaming when the screen is off or you switch apps.
-
-### Any other Linux — AppImage (no install)
-
-```bash
+cd ~/Downloads
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/Camic-1.0.0-x86_64.AppImage
 chmod +x Camic-1.0.0-x86_64.AppImage
 ./Camic-1.0.0-x86_64.AppImage
 ```
 
-Or unpack the tarball:
+If your distro doesn't ship FUSE 2 (Arch, some minimal installs), either
+`sudo pacman -S fuse2` / `sudo apt install libfuse2t64`, or run without FUSE:
 
 ```bash
-tar -xzf Camic-1.0.0-x64.tar.gz && ./Camic-1.0.0-x64/camic-desktop
+APPIMAGE_EXTRACT_AND_RUN=1 ./Camic-1.0.0-x86_64.AppImage
 ```
+
+### Portable tarball (no root, no package manager)
+
+```bash
+cd ~
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/Camic-1.0.0-x64.tar.gz
+tar -xzf Camic-1.0.0-x64.tar.gz
+./Camic-1.0.0-x64/camic-desktop
+```
+
+### Android (`.apk`)
+
+1. On your phone, open:
+   **https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/camic-1.0.0-android.apk**
+2. Allow **Install from this source** / **Install unknown apps** when prompted.
+3. Open **Camic**, grant **Camera** and **Microphone**.
+4. Note the **pairing PIN** shown on screen.
+
+> Android 8.0+ (minSdk 24). Runs as a foreground service so it keeps streaming
+> with the screen off or when you switch apps.
 
 ### From source
 
 ```bash
-# desktop (Linux/Windows receiver)
+# desktop (Linux receiver)
 cd desktop && npm install && npm start
 
 # android
@@ -120,6 +121,15 @@ echo 'options v4l2loopback card_label="Camic Camera" exclusive_caps=1' | \
 
 ---
 
+## Verify a download
+
+```bash
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.0/SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+---
+
 ## Building the installers
 
 ```bash
@@ -130,23 +140,17 @@ cd desktop && npx electron-builder --linux dir && cd ..
 scripts/build-linux-packages.sh          # both
 scripts/build-linux-packages.sh deb      # Ubuntu/Debian only
 scripts/build-linux-packages.sh rpm      # Fedora only
+
+# 3. AppImage + tar.gz
+cd desktop && npx electron-builder --linux AppImage tar.gz
 ```
 
 `scripts/build-linux-packages.sh` needs `ar`, `tar`, `fakeroot` (for `.deb`) and
 `rpmbuild` (for `.rpm`) — it does **not** need `dpkg` or `fpm`.
 
-The other targets come straight from electron-builder:
-
-```bash
-cd desktop
-npx electron-builder --linux AppImage tar.gz     # works locally
-npx electron-builder --linux deb rpm             # needs dpkg + rpmbuild/fpm
-```
-
 | Package | Built where |
 |---|---|
-| `.deb` | `scripts/build-linux-packages.sh` (any distro) or CI (Ubuntu) |
-| `.rpm` | `scripts/build-linux-packages.sh` (any distro) or CI (Fedora/Ubuntu) |
+| `.deb`, `.rpm` | `scripts/build-linux-packages.sh` (any distro) |
 | `AppImage`, `tar.gz` | `npx electron-builder` anywhere |
 | `.apk` | `flutter build apk --release` |
 | Flatpak / Snap | `packaging/flatpak/`, `snap/` (see `docs/PUBLISHING.md`) |
@@ -174,14 +178,6 @@ node /tmp/opencode/video-recv-test.js desktop/src/main/videoReceiver.js
 
 ---
 
-## Publishing to apt / dnf
-
-Step-by-step for a Debian/Ubuntu APT repository and a Fedora `dnf` repository
-(COPR or self-hosted), plus Flatpak and Snap, is in
-**[`docs/PUBLISHING.md`](docs/PUBLISHING.md)**.
-
----
-
 ## Repository layout
 
 ```
@@ -199,7 +195,6 @@ camic/
 ├── snap/                snapcraft.yaml + launcher assets
 ├── scripts/             host setup, installer packaging
 ├── tools/fake-phone/    Node test sender (synthetic H.264) — no phone needed
-├── dist/                built installers + SHA256SUMS
 └── docs/                architecture, build, publishing, user guide
 ```
 
@@ -217,8 +212,8 @@ camic/
 | Part | State |
 |---|---|
 | Protocol + fake-phone test harness | ✅ done, integration test passes |
-| Linux desktop receiver (Electron) | ✅ verified — virtual cam + mic, `.deb`/`.rpm`/AppImage built |
-| Android app (Flutter + MediaCodec) | ✅ APK built (44.9 MB) and installed on a real device |
+| Linux desktop receiver (Electron) | ✅ v1.0.0 released — `.deb`/`.rpm`/AppImage/tar.gz |
+| Android app (Flutter + MediaCodec) | ✅ APK in the v1.0.0 release |
 | Flatpak / Snap | 🟡 manifests written, not yet published |
 | Windows DirectShow filters | 🟡 scaffolded — **must be built/tested on Windows (MSVC)** |
 | iOS (VideoToolbox/AudioToolbox) | 🟡 scaffolded — **must be built/tested on a Mac** |
