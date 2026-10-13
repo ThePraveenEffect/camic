@@ -1,0 +1,76 @@
+name: camic
+base: core24
+version: '1.0.0'
+summary: Wireless webcam + mic from your phone over Wi-Fi
+description: |
+  Camic turns your phone into a wireless webcam and microphone for your
+  computer. Both devices just need to be on the same Wi-Fi network — the
+  phone is discovered automatically (mDNS), paired with a one-time PIN, and
+  its camera appears as a normal webcam in OBS, Zoom, Meet or any browser,
+  with the phone's mic available as a system microphone.
+
+  Features:
+    * Automatic local-network discovery, no account or cloud
+    * Up to 1080p H.264 low latency video with live FPS/bitrate/loss stats
+    * Virtual camera (v4l2loopback) and virtual mic (PipeWire null-sink)
+    * QR code / manual IP pairing
+
+  The companion Camic phone app (Android) is required.
+license: MIT
+grade: stable
+confinement: strict
+website: https://github.com/camic/camic
+source-code: https://github.com/camic/camic
+issues: https://github.com/camic/camic/issues
+
+apps:
+  camic:
+    command: bin/camic
+    extensions: [gnome]
+    plugs:
+      - network
+      - network-bind
+      - camera
+      - audio-record
+      - pulseaudio
+      - home
+      - desktop
+      - desktop-legacy
+      - wayland
+      - x11
+    environment:
+      # Electron/chromium inside strict confinement needs these
+      TMPDIR: /var/tmp
+
+parts:
+  camic:
+    plugin: nil
+    source: .
+    build-packages:
+      - nodejs
+      - npm
+      - libarchive-tools
+    # ffmpeg is spawned by the app (decode H.264, feed the v4l2loopback
+    # device, decode AAC into the PipeWire null-sink) so it must ship with
+    # the snap — the core24 runtime does not include the CLI.
+    stage-packages:
+      - ffmpeg
+    override-build: |
+      set -e
+      cd "$CRAFT_PART_SRC/desktop"
+      npm ci --no-audit --no-fund
+      npx electron-builder --linux dir
+
+      mkdir -p "$CRAFT_PART_INSTALL/camic" "$CRAFT_PART_INSTALL/bin"
+      cp -a release/linux-unpacked/. "$CRAFT_PART_INSTALL/camic/"
+
+      # Electron's chromium sandbox cannot be SUID under strict confinement
+      # (snapd does its own confinement), so disable Electron's.
+      cat > "$CRAFT_PART_INSTALL/bin/camic" <<'EOF'
+      #!/bin/sh
+      exec "$SNAP/camic/camic-desktop" --no-sandbox "$@"
+      EOF
+      chmod +x "$CRAFT_PART_INSTALL/bin/camic"
+
+      install -Dm644 "$CRAFT_PART_SRC/desktop/build/icon.png" \
+        "$CRAFT_PART_INSTALL/share/icons/hicolor/512x512/apps/camic.png"

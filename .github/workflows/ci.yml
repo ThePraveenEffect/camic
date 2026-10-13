@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  protocol-test:
+    name: Protocol + integration test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fake-phone self test
+        run: node tools/fake-phone/fake-phone.js --selftest
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: End-to-end integration test
+        run: node tools/integration-test.js
+
+  desktop-lint:
+    name: Desktop main-process syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require all main modules
+        working-directory: desktop
+        run: |
+          for f in src/main/protocol.js src/main/videoReceiver.js src/main/audioReceiver.js \
+                   src/main/streamReceiver.js src/main/controlClient.js src/main/discovery.js \
+                   src/main/devices/linuxVirtualDevice.js src/main/devices/virtualDevice.js \
+                   src/renderer/h264.js; do
+            node -e "require('./$f'); console.log('OK $f')"
+          done
+
+  linux-desktop:
+    name: Build Linux packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install ffmpeg (runtime dependency)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Build AppImage + deb + rpm + tar.gz
+        working-directory: desktop
+        # Ubuntu ships dpkg and a fpm-compatible libcrypt, so every target
+        # builds here (deb/rpm fail on Fedora: no dpkg, fpm needs libcrypt.so.1).
+        run: |
+          npm ci
+          npx electron-builder --linux
+      - name: Check artifacts
+        working-directory: desktop
+        run: ls -la release/*.AppImage release/*.deb release/*.rpm release/*.tar.gz
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: camic-linux
+          path: |
+            desktop/release/*.AppImage
+            desktop/release/*.deb
+            desktop/release/*.rpm
+            desktop/release/*.tar.gz
+
+  android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Build APK
+        working-directory: mobile
+        run: |
+          flutter pub get
+          flutter build apk --release
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: camic-android
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk

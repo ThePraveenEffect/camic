@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
+  <title>Camic</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <div class="brand">
+        <img class="logo" src="logo.png" alt="" />
+        <div>
+          <h1>Camic</h1>
+          <p class="tag">phone → pc over wi-fi</p>
+        </div>
+      </div>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Devices</h2>
+          <button id="rescan" class="ghost">Rescan</button>
+        </div>
+        <ul id="device-list" class="device-list"><li class="empty">Scanning…</li></ul>
+      </section>
+
+      <section class="panel">
+        <h2>Manual connect</h2>
+        <div class="row">
+          <input id="m-ip" placeholder="Phone IP" />
+          <input id="m-pin" placeholder="PIN" maxlength="6" />
+        </div>
+        <button id="m-connect" class="primary">Connect</button>
+      </section>
+
+      <section class="panel">
+        <h2>Stream</h2>
+        <div class="field"><label>Resolution</label>
+          <select id="s-res">
+            <option value="640x480">640×480</option>
+            <option value="1280x720" selected>1280×720</option>
+            <option value="1920x1080">1920×1080</option>
+          </select>
+        </div>
+        <div class="field"><label>Frame rate</label>
+          <select id="s-fps"><option value="15">15</option><option value="24">24</option><option value="30" selected>30</option></select>
+        </div>
+        <div class="field"><label>Jitter buffer</label>
+          <select id="s-jitter"><option value="1">1 (lowest latency)</option><option value="2" selected>2 (balanced)</option><option value="3">3 (stable)</option><option value="5">5 (rock solid)</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="s-audio" checked /> Microphone</label>
+        <div class="btn-row">
+          <button id="b-switch" class="ghost">Flip camera</button>
+          <button id="b-torch" class="ghost">Torch</button>
+        </div>
+        <button id="b-disconnect" class="danger" disabled>Disconnect</button>
+      </section>
+    </aside>
+
+    <main id="stage">
+      <div id="preview-wrap">
+        <canvas id="preview"></canvas>
+        <div id="preview-empty">
+          <span>Open Camic on your phone to get started</span>
+        </div>
+        <div id="badge" class="badge hidden">LIVE</div>
+        <div id="conn-state" class="conn-state idle"><i></i><span>Not connected</span></div>
+      </div>
+      <div id="stats">
+        <div class="stat"><span class="k">Video</span><span class="v" id="st-v">—</span></div>
+        <div class="stat"><span class="k">Bitrate</span><span class="v" id="st-b">—</span></div>
+        <div class="stat"><span class="k">Loss</span><span class="v" id="st-l">—</span></div>
+        <div class="stat"><span class="k">Phone</span><span class="v" id="st-p">—</span></div>
+        <div class="stat"><span class="k">Latency</span><span class="v" id="st-lat">—</span></div>
+      </div>
+      <div id="log"><div class="log-head">Log</div><div id="log-body"></div></div>
+    </main>
+  </div>
+
+  <!-- PIN dialog (window.prompt is not supported in Electron) -->
+  <div id="pin-modal" class="modal hidden">
+    <div class="modal-box">
+      <h3>Enter pairing PIN</h3>
+      <p id="pin-modal-desc" class="pin-desc">Enter the 6-digit PIN shown on your phone.</p>
+      <input id="pin-input" class="pin-input" maxlength="6" inputmode="numeric" placeholder="••••••" autocomplete="one-time-code" />
+      <div class="modal-actions">
+        <button id="pin-cancel" class="ghost">Cancel</button>
+        <button id="pin-ok" class="primary">Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="h264.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

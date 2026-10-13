@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.camic.Camic</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Camic</name>
+  <summary>Use your phone's camera and mic as a wireless webcam over Wi-Fi</summary>
+
+  <description>
+    <p>
+      Camic turns your phone into a wireless webcam and microphone for your
+      computer. Start the app on both devices on the same Wi-Fi network, and
+      your phone's camera appears as a normal webcam (OBS, Zoom, Meet, Teams)
+      with its microphone available as a system audio input.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Automatic device discovery over the local network (mDNS), no account or cloud</li>
+      <li>Up to 1080p H.264 video at low latency with live FPS/bitrate/loss stats</li>
+      <li>Virtual camera (v4l2loopback) and virtual microphone (PipeWire null-sink)</li>
+      <li>Works with OBS, browsers, and any app that can select a webcam</li>
+      <li>QR code / manual IP pairing with a one-time PIN</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">com.camic.Camic.desktop</launchable>
+  <provides>
+    <binary>camic-desktop</binary>
+  </provides>
+
+  <url type="homepage">https://github.com/camic/camic</url>
+  <url type="bugtracker">https://github.com/camic/camic/issues</url>
+  <url type="vcs-browser">https://github.com/camic/camic</url>
+
+  <!-- TODO(maintainer): replace with real hosted screenshots before Flathub
+       submission (Flathub requires at least one screenshot). -->
+  <!--
+  <screenshots>
+    <screenshot type="default">
+      <caption>Camic running with a phone stream in OBS</caption>
+      <image>https://raw.githubusercontent.com/camic/camic/main/screenshots/main.png</image>
+    </screenshot>
+  </screenshots>
+  -->
+
+  <developer id="com.camic">
+    <name>Camic</name>
+  </developer>
+
+  <content_rating type="oars-1.1" />
+
+  <categories>
+    <category>Video</category>
+    <category>AudioVideo</category>
+    <category>Network</category>
+  </categories>
+
+  <releases>
+    <release version="1.0.0" date="2026-10-12">
+      <description>
+        <p>Initial release: wireless webcam and microphone from your phone.</p>
+      </description>
+    </release>
+  </releases>
+</component>

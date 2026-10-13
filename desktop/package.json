@@ -1,0 +1,69 @@
+{
+  "name": "camic-desktop",
+  "productName": "Camic",
+  "version": "1.0.0",
+  "description": "Use your phone's camera and mic as a wireless webcam and microphone over Wi-Fi.",
+  "main": "src/main/index.js",
+  "author": "Camic",
+  "license": "MIT",
+  "homepage": "https://github.com/camic/camic",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/camic/camic.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist:linux": "electron-builder --linux",
+    "dist:linux:nodpkg": "electron-builder --linux AppImage rpm tar.gz",
+    "dist:win": "electron-builder --win",
+    "fake-phone": "node ../tools/fake-phone/fake-phone.js"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "bonjour-service": "^1.2.1"
+  },
+  "build": {
+    "appId": "com.camic.app",
+    "productName": "Camic",
+    "copyright": "© Camic",
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm",
+        "tar.gz"
+      ],
+      "icon": "build/icon.png",
+      "category": "Video",
+      "synopsis": "Wireless webcam + mic from your phone over Wi-Fi",
+      "maintainer": "Camic <maintainers@camic.app>",
+      "vendor": "Camic",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "desktop": {
+        "entry": {
+          "Name": "Camic",
+          "GenericName": "Wireless Webcam",
+          "Comment": "Use your phone camera and mic as a wireless webcam over Wi-Fi",
+          "Keywords": "webcam;camera;phone;stream;wireless;obs;zoom;meet;",
+          "StartupWMClass": "Camic"
+        }
+      }
+    },
+    "win": {
+      "target": ["nsis"],
+      "artifactName": "Camic-Setup-${version}.exe"
+    }
+  }
+}

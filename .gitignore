@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+.dart_tool/
+.pub-cache/
+
+# build outputs
+dist/
+*.AppImage
+*.apk
+*.deb
+*.rpm
+
+# electron-builder (keep desktop/build/ icons — the build needs them)
+desktop/release/
+desktop/.pkg/
+
+# flutter
+mobile/build/
+mobile/android/.gradle/
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+
+# flatpak/snap build trees
+build-dir/
+*.snap
+
+# editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# logs
+*.log
+/tmp/
+
+# debug scaffolding (video repro experiments)
+tmp-repro/

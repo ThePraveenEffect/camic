@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Camic control message",
+  "description": "Newline-delimited JSON messages on the TCP control channel. Only the fields relevant to each cmd are present.",
+  "type": "object",
+  "required": ["cmd"],
+  "properties": {
+    "cmd": {
+      "type": "string",
+      "enum": [
+        "hello", "helloAck", "start", "started", "stop", "stopped",
+        "keyframe", "switchCamera", "setTorch", "setZoom",
+        "status", "ping", "pong", "error"
+      ]
+    },
+    "v": { "type": "integer", "const": 1 },
+    "pin": { "type": "string", "description": "6-digit pairing PIN (hello only)" },
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "video": {
+      "type": "object",
+      "properties": {
+        "w": { "type": "integer" }, "h": { "type": "integer" },
+        "fps": { "type": "integer" }, "bitrate": { "type": "integer" },
+        "codec": { "type": "string", "enum": ["h264"] }
+      }
+    },
+    "audio": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "sampleRate": { "type": "integer" }, "channels": { "type": "integer" },
+        "bitrate": { "type": "integer" }, "codec": { "type": "string", "enum": ["aac", "pcm"] }
+      }
+    },
+    "cameras": { "type": "array" },
+    "battery": { "type": "integer" },
+    "temp": { "type": "number" },
+    "fps": { "type": "number" },
+    "bitrate": { "type": "number" },
+    "lossPct": { "type": "number" },
+    "code": { "type": "string" },
+    "message": { "type": "string" },
+    "on": { "type": "boolean" },
+    "t": { "type": "integer" },
+    "lt": { "type": "integer" }
+  }
+}

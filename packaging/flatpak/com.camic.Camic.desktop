@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Camic
+GenericName=Wireless Webcam
+Comment=Use your phone camera and mic as a wireless webcam over Wi-Fi
+Exec=camic-desktop
+Icon=com.camic.Camic
+Terminal=false
+Categories=Video;AudioVideo;Network;
+Keywords=webcam;camera;phone;stream;wireless;obs;zoom;meet;
+StartupWMClass=Camic
+StartupNotify=true
