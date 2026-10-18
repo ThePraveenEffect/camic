@@ -58,6 +58,17 @@ If your distro doesn't ship FUSE 2 (Arch, some minimal installs), either
 APPIMAGE_EXTRACT_AND_RUN=1 ./Camic-1.0.3-x86_64.AppImage
 ```
 
+> **"The SUID sandbox helper binary … not configured correctly" error?**
+> The `.deb`/`.rpm` and the normally-mounted AppImage fix themselves on install.
+> The portable **tarball** (extracted by a non-root user) and the
+> **extract-and-run** AppImage mode need one-time root ownership of the helper:
+>
+> ```bash
+> sudo chown root:root /path/to/chrome-sandbox && sudo chmod 4755 /path/to/chrome-sandbox
+> ```
+>
+> (or run the app with `--no-sandbox` as a last resort).
+
 ### Portable tarball (no root, no package manager)
 
 ```bash

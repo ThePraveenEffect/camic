@@ -66,7 +66,14 @@
         "nsis"
       ],
       "artifactName": "Camic-Setup-${version}.exe"
-    }
+    },
+    "deb": {
+      "afterInstall": "build/after-install.sh"
+    },
+    "rpm": {
+      "afterInstall": "build/after-install.sh"
+    },
+    "afterPack": "./build/fix-sandbox.js"
   },
   "allowScripts": {
     "electron@33.4.11": true
