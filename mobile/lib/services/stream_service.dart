@@ -39,6 +39,10 @@ class StreamService {
   void _handleFrame(Map<String, dynamic> frame) {
     if (!_streaming || _sender == null) return;
     final type = frame['type'] as String?;
+    if (type == 'log') {
+      onLog?.call((frame['msg'] ?? '').toString());
+      return;
+    }
     final data = frame['data'] as Uint8List?;
     if (data == null) return;
     switch (type) {
@@ -62,6 +66,10 @@ class StreamService {
   }
 
   Future<void> switchCamera() => native.switchCamera();
+
+  Future<void> refocus() => native.refocus();
+
+  void reportLoss(double lossPct) => native.reportLoss(lossPct);
 
   Future<void> stop() async {
     _statusTimer?.cancel();

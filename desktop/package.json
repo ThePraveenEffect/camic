@@ -1,7 +1,7 @@
 {
   "name": "camic-desktop",
   "productName": "Camic",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Use your phone's camera and mic as a wireless webcam and microphone over Wi-Fi.",
   "main": "src/main/index.js",
   "author": "Camic",
@@ -29,7 +29,7 @@
   "build": {
     "appId": "com.camic.app",
     "productName": "Camic",
-    "copyright": "© Camic",
+    "copyright": "\u00a9 Camic",
     "directories": {
       "buildResources": "build",
       "output": "release"
@@ -62,8 +62,13 @@
       }
     },
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "artifactName": "Camic-Setup-${version}.exe"
     }
+  },
+  "allowScripts": {
+    "electron@33.4.11": true
   }
 }

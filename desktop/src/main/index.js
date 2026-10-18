@@ -23,7 +23,9 @@ const state = {
   connected: false,
   streaming: false,
   device: null,
-  settings: { w: 1280, h: 720, fps: 30, bitrate: 4_000_000, audio: true, jitter: 2, videoDev: null },
+  // Default to 1080p: at 720p small details (text on a card, a component) are
+  // physically unresolvable even with perfect focus.
+  settings: { w: 1920, h: 1080, fps: 30, bitrate: 6_000_000, audio: true, jitter: 2, videoDev: null },
 };
 
 function sendToRenderer(channel, payload) { if (win && !win.isDestroyed()) win.webContents.send(channel, payload); }
@@ -59,7 +61,7 @@ function connectToDevice(dev, pin) {
   // Reuse the persistent virtual device (created at startup) so OBS keeps the
   // same node names; only rebuild if it was never created.
   if (!vdev) {
-    vdev = createVirtualDevice({ videoDev: state.settings.videoDev });
+    vdev = createVirtualDevice({ videoDev: state.settings.videoDev, size: { w: state.settings.w, h: state.settings.h, fps: state.settings.fps } });
     vdev.on('error', (err) => { console.error('[vdev] error:', err.message); sendToRenderer('log', { level: 'error', msg: err.message }); });
     vdev.on('videoReady', (d) => { console.log('[vdev] camera →', d); sendToRenderer('log', { level: 'info', msg: 'virtual camera → ' + d }); });
     vdev.on('audioReady', (s) => { console.log('[vdev] mic →', s); sendToRenderer('log', { level: 'info', msg: 'virtual mic → ' + s }); });
@@ -113,7 +115,15 @@ function startStreamPipeline(startedInfo) {
   // the 2s timer, so the camera picture resynchronises at once.
   stream.on('truncated', () => { if (state.streaming) { try { control && control.keyframe(); } catch {} } });
   stream.on('audio', (frame) => { vdev.writeAudio(frame); });
-  stream.on('videoStats', (s) => { if (s.fps > 0) console.log('[video] %d fps, %d Mbps, loss %d%%', s.fps.toFixed(1), (s.bitrate / 1e6).toFixed(2), s.lossPct.toFixed(1)); if (s.truncated > 0) console.log('[video] dropped %d incomplete frame(s) rather than feed corrupt bytes to the camera', s.truncated); sendToRenderer('video-stats', s); });
+  // Loss feedback loop: report measured packet loss to the phone ~1 Hz so the
+  // encoder can pull its bitrate below what the Wi-Fi link actually sustains.
+  // Without this the phone blasts a fixed CBR rate and quality is locked bad.
+  stream.on('videoStats', (s) => {
+    if (s.fps > 0) console.log('[video] %d fps, %d Mbps, loss %d%%', s.fps.toFixed(1), (s.bitrate / 1e6).toFixed(2), s.lossPct.toFixed(1));
+    if (s.truncated > 0) console.log('[video] dropped %d incomplete frame(s) rather than feed corrupt bytes to the camera', s.truncated);
+    if (state.streaming && control) { try { control.netq(s.lossPct || 0); } catch {} }
+    sendToRenderer('video-stats', s);
+  });
   stream.on('audioStats', (s) => { if (s.frames > 0) console.log('[audio] frames=%d rate=%d', s.frames, s.sampleRate || ''); sendToRenderer('audio-stats', s); });
   stream.on('error', (err) => { console.error('[main] stream error:', err.message); sendToRenderer('log', { level: 'error', msg: 'stream: ' + err.message }); });
   if (startedInfo.video) vdev.startVideo();
@@ -143,6 +153,7 @@ ipcMain.handle('connect', (e, { host, port, pin }) => {
 ipcMain.handle('disconnect', () => { if (control) control.disconnect(); stopStreamPipeline(); state.connected = false; state.streaming = false; return true; });
 ipcMain.handle('stop-stream', () => { if (control) control.stop(); return true; });
 ipcMain.handle('switch-camera', () => { if (control) control.switchCamera(); return true; });
+ipcMain.handle('refocus', () => { if (control) control.refocus(); return true; });
 ipcMain.handle('set-torch', (e, on) => { if (control) control.setTorch(on); return true; });
 ipcMain.handle('get-settings', () => state.settings);
 ipcMain.handle('set-settings', (e, s) => { Object.assign(state.settings, s); return state.settings; });
@@ -155,7 +166,7 @@ app.whenReady().then(() => {
   // Create the virtual devices up-front so OBS/browsers always see
   // "Camic Camera" + "Camic Mic" even before a phone connects.
   try {
-    vdev = createVirtualDevice({ videoDev: state.settings.videoDev });
+    vdev = createVirtualDevice({ videoDev: state.settings.videoDev, size: { w: state.settings.w, h: state.settings.h, fps: state.settings.fps } });
     vdev.on('error', (err) => sendToRenderer('log', { level: 'error', msg: err.message }));
     vdev.on('videoReady', (d) => sendToRenderer('log', { level: 'info', msg: 'virtual camera → ' + d }));
     vdev.on('audioReady', (s) => sendToRenderer('log', { level: 'info', msg: 'virtual mic → ' + s }));

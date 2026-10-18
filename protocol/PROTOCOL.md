@@ -40,6 +40,8 @@ Newline-delimited UTF-8 JSON. Desktop connects to phone. First message must be `
 {"cmd":"stop"}
 {"cmd":"keyframe"}
 {"cmd":"switchCamera"}
+{"cmd":"refocus"}
+{"cmd":"netq","loss":4.2}
 {"cmd":"setTorch","on":true}
 {"cmd":"setZoom","level":1.5}
 {"cmd":"ping","t":1718000000000}

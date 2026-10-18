@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('camic', {
   disconnect: () => ipcRenderer.invoke('disconnect'),
   stopStream: () => ipcRenderer.invoke('stop-stream'),
   switchCamera: () => ipcRenderer.invoke('switch-camera'),
+  refocus: () => ipcRenderer.invoke('refocus'),
   setTorch: (on) => ipcRenderer.invoke('set-torch', on),
   getSettings: () => ipcRenderer.invoke('get-settings'),
   setSettings: (s) => ipcRenderer.invoke('set-settings', s),

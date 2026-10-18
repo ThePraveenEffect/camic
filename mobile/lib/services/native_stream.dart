@@ -70,6 +70,12 @@ class NativeStream {
 
   Future<void> switchCamera() => _method.invokeMethod('switchCamera');
 
+  /// One-shot AF re-scan onto whatever is in frame now, then re-freeze.
+  Future<void> refocus() => _method.invokeMethod('refocus');
+
+  /// Relay the desktop's measured packet loss (~1 Hz) to the encoder.
+  Future<void> reportLoss(double lossPct) => _method.invokeMethod('netq', {'loss': lossPct});
+
   Future<void> advertise({required String name, required int port, required String id}) =>
       _nsd.invokeMethod('register', {'name': name, 'port': port, 'id': id});
 

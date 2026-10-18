@@ -9,7 +9,7 @@
       "type": "string",
       "enum": [
         "hello", "helloAck", "start", "started", "stop", "stopped",
-        "keyframe", "switchCamera", "setTorch", "setZoom",
+        "keyframe", "switchCamera", "refocus", "netq", "setTorch", "setZoom",
         "status", "ping", "pong", "error"
       ]
     },
@@ -39,6 +39,7 @@
     "fps": { "type": "number" },
     "bitrate": { "type": "number" },
     "lossPct": { "type": "number" },
+    "loss": { "type": "number", "description": "Measured UDP packet loss percent (netq, desktop → phone)" },
     "code": { "type": "string" },
     "message": { "type": "string" },
     "on": { "type": "boolean" },

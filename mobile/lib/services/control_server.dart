@@ -17,6 +17,10 @@ class ControlServer {
   void Function()? onStop;
   void Function()? onKeyframe;
   void Function()? onSwitchCamera;
+  void Function()? onRefocus;
+  /// Desktop reports measured UDP packet loss (~1 Hz) so the encoder can
+  /// steer bitrate within what the Wi-Fi link actually sustains.
+  void Function(double lossPct)? onNetq;
   void Function(bool on)? onTorch;
 
   /// Invoked when the authenticated desktop link goes away (clean close,
@@ -137,6 +141,8 @@ class ControlServer {
       case 'stop': onStop?.call(); break;
       case 'keyframe': onKeyframe?.call(); break;
       case 'switchCamera': onSwitchCamera?.call(); break;
+      case 'refocus': onRefocus?.call(); break;
+      case 'netq': onNetq?.call((msg['loss'] as num?)?.toDouble() ?? 0.0); break;
       case 'setTorch': onTorch?.call(msg['on'] == true); break;
       case 'ping': _send(socket, {'cmd': 'pong', 't': msg['t'], 'lt': DateTime.now().millisecondsSinceEpoch}); break;
       case 'pong': break; // reply to our own keepalive — nothing to do

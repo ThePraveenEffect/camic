@@ -21,23 +21,23 @@ Phone (Android)  ──H.264 + AAC over Wi-Fi──►  PC (Linux)
 ## Install — pick your distro
 
 All downloads come from GitHub Releases.
-Linux packages (`.deb`/`.rpm`/AppImage/tar.gz): **[v1.0.2](https://github.com/ThePraveenEffect/camic/releases/tag/v1.0.2)**.
-Android APK: **[v1.0.1](https://github.com/ThePraveenEffect/camic/releases/tag/v1.0.1)** (latest).
-SHA256 checksums: [v1.0.2](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/SHA256SUMS) ·
-[v1.0.1](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.1/SHA256SUMS-1.0.1.txt).
+Linux packages (`.deb`/`.rpm`/AppImage/tar.gz): **[v1.0.3](https://github.com/ThePraveenEffect/camic/releases/tag/v1.0.3)**.
+Android APK: **[v1.0.3](https://github.com/ThePraveenEffect/camic/releases/tag/v1.0.3)** (latest).
+SHA256 checksums: [SHA256SUMS](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.3/SHA256SUMS) ·
+[older v1.0.2](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/SHA256SUMS).
 
 ### Fedora / RHEL / CentOS (`.rpm`)
 
 ```bash
-sudo dnf install https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/camic-1.0.2.x86_64.rpm
+sudo dnf install https://github.com/ThePraveenEffect/camic/releases/download/v1.0.3/Camic-1.0.3-x86_64.rpm
 ```
 
 ### Ubuntu / Debian (`.deb`)
 
 ```bash
 mkdir -p ~/Downloads/camic && cd ~/Downloads/camic
-curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/camic-1.0.2-amd64.deb
-sudo apt install ./camic-1.0.2-amd64.deb
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.3/Camic-1.0.3-amd64.deb
+sudo apt install ./Camic-1.0.3-amd64.deb
 ```
 
 > `apt install ./file.deb` resolves dependencies from Ubuntu's own repos.
@@ -46,31 +46,31 @@ sudo apt install ./camic-1.0.2-amd64.deb
 
 ```bash
 mkdir -p ~/Downloads/camic && cd ~/Downloads/camic
-curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/Camic-1.0.2-x86_64.AppImage
-chmod +x Camic-1.0.2-x86_64.AppImage
-./Camic-1.0.2-x86_64.AppImage
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.3/Camic-1.0.3-x86_64.AppImage
+chmod +x Camic-1.0.3-x86_64.AppImage
+./Camic-1.0.3-x86_64.AppImage
 ```
 
 If your distro doesn't ship FUSE 2 (Arch, some minimal installs), either
 `sudo pacman -S fuse2` / `sudo apt install libfuse2t64`, or run without FUSE:
 
 ```bash
-APPIMAGE_EXTRACT_AND_RUN=1 ./Camic-1.0.2-x86_64.AppImage
+APPIMAGE_EXTRACT_AND_RUN=1 ./Camic-1.0.3-x86_64.AppImage
 ```
 
 ### Portable tarball (no root, no package manager)
 
 ```bash
 mkdir -p ~/Downloads/camic && cd ~/Downloads/camic
-curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/Camic-1.0.2-x64.tar.gz
-tar -xzf Camic-1.0.2-x64.tar.gz
-./Camic-1.0.2-x64/camic-desktop
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.3/Camic-1.0.3-x64.tar.gz
+tar -xzf Camic-1.0.3-x64.tar.gz
+./Camic-1.0.3-x64/camic-desktop
 ```
 
 ### Android (`.apk`)
 
 1. On your phone, open:
-   **https://github.com/ThePraveenEffect/camic/releases/download/v1.0.1/camic-1.0.1-android.apk**
+   **https://github.com/ThePraveenEffect/camic/releases/download/v1.0.3/camic-1.0.3-android.apk**
 2. Allow **Install from this source** / **Install unknown apps** when prompted.
 3. Open **Camic**, grant **Camera** and **Microphone**.
 4. Note the **pairing PIN** shown on screen.
@@ -125,18 +125,13 @@ echo 'options v4l2loopback card_label="Camic Camera" exclusive_caps=1' | \
 
 ## Verify a download
 
-Grab the `SHA256SUMS` that matches the release you downloaded (Linux = v1.0.2,
-Android = v1.0.1), then:
+Grab the [SHA256SUMS](https://github.com/ThePraveenEffect/camic/releases/download/v1.0.3/SHA256SUMS)
+(covers Linux packages and the Android APK), then:
 
 ```bash
 cd ~/Downloads/camic
-# Linux packages (v1.0.2):
-curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.2/SHA256SUMS
+curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.3/SHA256SUMS
 sha256sum -c SHA256SUMS --ignore-missing
-
-# Android APK (v1.0.1):
-curl -LO https://github.com/ThePraveenEffect/camic/releases/download/v1.0.1/SHA256SUMS-1.0.1.txt
-sha256sum -c SHA256SUMS-1.0.1.txt --ignore-missing
 ```
 
 ---

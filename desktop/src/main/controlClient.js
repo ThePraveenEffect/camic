@@ -73,6 +73,10 @@ class ControlClient extends EventEmitter {
   stop() { this.send({ cmd: 'stop' }); }
   keyframe() { this.send({ cmd: 'keyframe' }); }
   switchCamera() { this.send({ cmd: 'switchCamera' }); }
+  refocus() { this.send({ cmd: 'refocus' }); }
+  /** Feed measured packet loss back to the phone so the encoder keeps quality
+   *  within what the Wi-Fi link actually sustains (loss → lower bitrate). */
+  netq(lossPct) { this.send({ cmd: 'netq', loss: lossPct }); }
   setTorch(on) { this.send({ cmd: 'setTorch', on: !!on }); }
   ping(t = Date.now()) { this.send({ cmd: 'ping', t }); }
 

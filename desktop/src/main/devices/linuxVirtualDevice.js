@@ -31,9 +31,11 @@ class LinuxVirtualDevice extends EventEmitter {
     // across source switches so a mid-frame kill can't byte-shift OBS's frames.
     this._idlePump = null;
     this._decPump = null;
-    // Fixed virtual-camera format. Everything is scaled to this so the writer
-    // never needs a restart (resolution changes would otherwise freeze OBS).
-    this.vsize = { w: 1280, h: 720, fps: 30 };
+    // Virtual-camera format (scaled from the phone stream so the writer never
+    // needs a restart — resolution changes would otherwise freeze OBS).
+    // Default 1080p: at 720p small details are unresolvable even with perfect
+    // focus. Override via createVirtualDevice({ size: {w,h,fps} }).
+    this.vsize = { w: opts.size?.w || 1920, h: opts.size?.h || 1080, fps: opts.size?.fps || 30 };
     this.audProc = null;
     this.sinkModuleId = null;
     this.sourceModuleId = null;
@@ -219,8 +221,14 @@ class LinuxVirtualDevice extends EventEmitter {
       // low_delay' is safe and keeps latency down.
       '-flags', 'low_delay',
       '-f', 'h264', '-i', 'pipe:0',
-      '-vf', `scale=${w}:${h}:force_original_aspect_ratio=decrease,pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2,fps=${fps}`,
-      '-pix_fmt', 'yuv420p', '-an',
+      // Sharpness chain: light 3D denoise → lanczos scale (sharper than the
+      // default bicubic) → FidelityFX CAS sharpen (luma-only, no chroma
+      // ringing). Denoise MUST precede sharpen or sensor noise gets amplified.
+      '-vf', `hqdn3d=3:2:4:3,scale=${w}:${h}:flags=lanczos:force_original_aspect_ratio=decrease,pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2,cas=strength=0.4:planes=1,fps=${fps}`,
+      '-pix_fmt', 'yuv420p',
+      // Declare the color we write so OBS/consumers don't guess BT.601.
+      '-color_range', 'tv', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709',
+      '-an',
       '-f', 'rawvideo', 'pipe:1',
     ];
     const proc = spawn(this.ffmpeg, args, { stdio: ['pipe', 'pipe', 'pipe'] });

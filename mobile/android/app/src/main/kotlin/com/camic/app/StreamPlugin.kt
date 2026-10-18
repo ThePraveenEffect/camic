@@ -3,6 +3,7 @@ package com.camic.app
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import java.util.ArrayDeque
@@ -14,8 +15,10 @@ import java.util.ArrayDeque
  *   start {w,h,fps,bitrate,audioEnabled,sampleRate,channels,audioBitrate,facingBack}
  *   stop
  *   switchCamera
+ *   refocus
+ *   netq {loss}  (desktop-measured packet loss → encoder bitrate steering)
  * Events via EventChannel "camic/frames":
- *   map {type:'video'|'audio'|'videoConfig'|'audioConfig', data: Uint8List, isKey: bool, ts: long}
+ *   map {type:'video'|'audio'|'videoConfig'|'audioConfig'|'log', data: Uint8List, isKey: bool, ts: long}
  *
  * Frames are queued and flushed to Dart on the platform thread; Dart forwards
  * them to the UDP sender. Backpressure: if the queue grows beyond a cap we drop
@@ -44,12 +47,19 @@ class StreamPlugin(private val context: Context) : MethodChannel.MethodCallHandl
                 enqueue(mapOf("type" to "video", "data" to data, "isKey" to isKey, "ts" to tsUs, "drop" to (!isKey)))
             }
             override fun onError(message: String) { sendError(message) }
+            override fun onLog(message: String) { sendLog(message) }
         }
         audioEncoder.listener = object : AudioEncoder.Listener {
             override fun onFrame(data: ByteArray, tsUs: Long) { enqueue(mapOf("type" to "audio", "data" to data, "ts" to tsUs)) }
             override fun onConfig(data: ByteArray) { enqueue(mapOf("type" to "audioConfig", "data" to data)) }
             override fun onError(message: String) { sendError(message) }
         }
+    }
+
+    /** Diagnostic text → logcat + on-screen phone log (type 'log', no data). */
+    private fun sendLog(message: String) {
+        Log.i("Camic", message)
+        enqueue(mapOf("type" to "log", "msg" to message))
     }
 
     override fun onMethodCall(call: io.flutter.plugin.common.MethodCall, result: MethodChannel.Result) {
@@ -81,6 +91,8 @@ class StreamPlugin(private val context: Context) : MethodChannel.MethodCallHandl
             }
             "stop" -> { videoEncoder.stop(); audioEncoder.stop(); StreamService.stop(context); result.success(true) }
             "switchCamera" -> { videoEncoder.switchCamera(); result.success(true) }
+            "refocus" -> { videoEncoder.refocus(); result.success(true) }
+            "netq" -> { videoEncoder.adjustNetwork(call.argument<Double>("loss") ?: 0.0); result.success(true) }
             else -> result.notImplemented()
         }
     }
@@ -111,14 +123,23 @@ class StreamPlugin(private val context: Context) : MethodChannel.MethodCallHandl
         val sink = events ?: return
         while (true) {
             val frame = synchronized(lock) { if (queue.isEmpty()) null else queue.pollFirst() } ?: break
-            val map = HashMap(frame)
-            @Suppress("UNCHECKED_CAST")
-            map["data"] = frame["data"] as ByteArray
-            sink.success(map)
+            try {
+                val map = HashMap(frame)
+                // 'log' frames carry only a msg string — casting a missing "data"
+                // to ByteArray throws and would crash the app on the main thread.
+                val data = frame["data"]
+                if (data is ByteArray) map["data"] = data
+                sink.success(map)
+            } catch (t: Throwable) {
+                Log.w("Camic", "frame flush failed: $t")
+                break
+            }
         }
     }
 
     private fun sendError(message: String) {
-        mainHandler.post { events?.error("encode", message, null) }
+        mainHandler.post {
+            try { events?.error("encode", message, null) } catch (t: Throwable) { Log.w("Camic", "error sink failed: $t") }
+        }
     }
 }

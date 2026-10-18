@@ -3,7 +3,121 @@
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('preview');
-const ctx = canvas.getContext('2d');
+
+// ---- preview paint: WebGL2 FidelityFX CAS (sharp) with 2D fallback ----
+// The canvas can hold only ONE context type, so try WebGL2 first.
+let ctx = null;                 // 2D fallback (set only if WebGL2 is unavailable)
+let gl = null;
+let casReady = false;
+let casProg = null, casTex = null, casUSharp = null, casUTexel = null;
+const CAS_SHARPNESS = 0.5;      // 0 = off, 1 = max (FidelityFX strength)
+
+const CAS_VS = `#version 300 es
+in vec2 aPos;
+out vec2 vUv;
+void main() {
+  vUv = aPos * 0.5 + 0.5;
+  gl_Position = vec4(aPos, 0.0, 1.0);
+}`;
+
+// FidelityFX Contrast Adaptive Sharpening (5-tap cross form): sharpens local
+// contrast while leaving flat areas alone — no halos, no noise blowup.
+const CAS_FS = `#version 300 es
+precision mediump float;
+uniform sampler2D uTex;
+uniform vec2 uTexel;
+uniform float uSharp;
+in vec2 vUv;
+out vec4 fragColor;
+void main() {
+  vec3 b = texture(uTex, vUv + vec2(0.0,  uTexel.y)).rgb;
+  vec3 d = texture(uTex, vUv + vec2(-uTexel.x, 0.0)).rgb;
+  vec3 e = texture(uTex, vUv).rgb;
+  vec3 f = texture(uTex, vUv + vec2( uTexel.x, 0.0)).rgb;
+  vec3 h = texture(uTex, vUv + vec2(0.0, -uTexel.y)).rgb;
+  vec3 mn = min(min(min(d, e), min(f, b)), h);
+  vec3 mx = max(max(max(d, e), max(f, b)), h);
+  vec3 rcpM = 1.0 / max(mx, vec3(1e-4));
+  vec3 amp = clamp(min(mn, 2.0 - mx) * rcpM, 0.0, 1.0);
+  amp = sqrt(amp);
+  float peak = -1.0 / mix(8.0, 5.0, clamp(uSharp, 0.0, 1.0));
+  vec3 w = amp * peak;
+  vec3 rcpW = 1.0 / (1.0 + 4.0 * w);
+  fragColor = vec4(clamp((b * w + d * w + f * w + h * w + e) * rcpW, 0.0, 1.0), 1.0);
+}`;
+
+function compile(gl2, type, src) {
+  const s = gl2.createShader(type);
+  gl2.shaderSource(s, src);
+  gl2.compileShader(s);
+  if (!gl2.getShaderParameter(s, gl2.COMPILE_STATUS)) throw new Error(gl2.getShaderInfoLog(s) || 'shader');
+  return s;
+}
+
+function initCas() {
+  try {
+    gl = canvas.getContext('webgl2', { alpha: false, antialias: false, depth: false });
+    if (!gl) return;
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, CAS_VS));
+    gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, CAS_FS));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog) || 'link');
+    gl.useProgram(prog);
+    // Full-screen triangle.
+    const vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'aPos');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    casTex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, casTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    casUSharp = gl.getUniformLocation(prog, 'uSharp');
+    casUTexel = gl.getUniformLocation(prog, 'uTexel');
+    gl.uniform1i(gl.getUniformLocation(prog, 'uTex'), 0);
+    casProg = prog;
+    casReady = true;
+    log('info', 'preview: WebGL2 CAS sharpening active');
+  } catch (e) {
+    gl = null;
+    casReady = false;
+    log('warn', 'preview: CAS unavailable (' + e.message + '), using plain canvas');
+  }
+}
+
+initCas();
+if (!gl) ctx = canvas.getContext('2d');
+
+async function paintFrame(frame) {
+  if (gl && casReady) {
+    let bmp;
+    try {
+      bmp = await createImageBitmap(frame);
+    } catch (e) {
+      if (casReady) log('warn', 'preview: frame convert failed (' + e.message + '), sharpening off');
+      casReady = false;
+      return;
+    }
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, casTex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bmp);
+    bmp.close();
+    gl.uniform1f(casUSharp, CAS_SHARPNESS);
+    gl.uniform2f(casUTexel, 1 / Math.max(1, canvas.width), 1 / Math.max(1, canvas.height));
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  } else if (ctx) {
+    ctx.drawImage(frame, 0, 0);
+  }
+}
 
 // ---- WebCodecs preview decoder ----
 let decoder = null;
@@ -93,7 +207,7 @@ async function pumpPresent() {
     if (canvas.width !== frame.displayWidth || canvas.height !== frame.displayHeight) {
       canvas.width = frame.displayWidth; canvas.height = frame.displayHeight;
     }
-    ctx.drawImage(frame, 0, 0);
+    await paintFrame(frame);
     frame.close();
     lastFrameTs = performance.now();
     $('preview-empty').style.display = 'none';
@@ -244,7 +358,14 @@ function setButtonsBusy(busy) {
 
 function showPreviewEmpty(on) {
   $('preview-empty').style.display = on ? '' : 'none';
-  if (on) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!on) return;
+  if (ctx) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  } else if (gl) {
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+  }
 }
 
 function setConnected(on) {
@@ -286,6 +407,7 @@ $('b-disconnect').onclick = async () => {
   setStatus('idle', 'Not connected');
 };
 $('b-switch').onclick = () => window.camic.switchCamera();
+$('b-refocus').onclick = () => window.camic.refocus();
 let torchOn = false;
 $('b-torch').onclick = () => { torchOn = !torchOn; window.camic.setTorch(torchOn); };
 $('s-res').onchange = applySettings;

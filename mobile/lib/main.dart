@@ -71,6 +71,8 @@ class _ServerScreenState extends State<ServerScreen> with WidgetsBindingObserver
     _control!.onStart = _onStart;
     _control!.onStop = _onStop;
     _control!.onSwitchCamera = () => _stream.switchCamera();
+    _control!.onRefocus = () => _stream.refocus();
+    _control!.onNetq = (loss) => _stream.reportLoss(loss);
     _control!.onTorch = (_) {}; // torch wired in VideoEncoder if desired
     _control!.onDisconnect = _onDisconnect;
     try {
@@ -228,6 +230,8 @@ class _ServerScreenState extends State<ServerScreen> with WidgetsBindingObserver
               // controls
               Row(children: [
                 Expanded(child: _btn('Flip camera', Icons.flip_camera_ios, () => _stream.switchCamera())),
+                const SizedBox(width: 12),
+                Expanded(child: _btn('Focus', Icons.center_focus_strong, () => _stream.refocus())),
                 const SizedBox(width: 12),
                 Expanded(child: _btn(_streaming ? 'Stop' : 'Idle', _streaming ? Icons.stop : Icons.videocam_off, () {
                   if (_streaming) _onStop();
